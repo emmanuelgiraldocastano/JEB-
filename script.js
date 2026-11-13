@@ -432,7 +432,7 @@ function renderCart(){
    Por defecto muestra vistas previas generadas con el personalizador.
    Para usar fotos y reseñas REALES agrega a cada item:
    photo:'img/cliente1.jpg', quote:'Excelente calidad', author:'Nombre', stars:5 */
-/* estampados de productos/inspiracion/estampados.js (window.JEB_INSP); posición como en los ejemplos de la carpeta inspiración */
+/* estampados de inspiracion/estampados.js (window.JEB_INSP); posición como en los ejemplos de la carpeta inspiración */
 const GALLERY = [
   { product:'camiseta', color:'blanca', caption:'Calavera clásica en camiseta blanca',
     layers:[{ type:'image', insp:'calavera', x:.5, y:.45, scale:2.05, rot:0 }] },
@@ -448,7 +448,7 @@ const gLayers = g => g.layers.map(l => l.insp ? Object.assign({}, l, { src: (win
 async function buildGallery(){
   const wrap = $('gallery');
   wrap.innerHTML = '';
-  try{ if(!window.JEB_INSP) await loadScriptOnce('productos/inspiracion/estampados.js'); }catch(e){ console.warn('Estampados de inspiración', e); }
+  try{ if(!window.JEB_INSP) await loadScriptOnce('inspiracion/estampados.js'); }catch(e){ console.warn('Estampados de inspiración', e); }
   for(const g of GALLERY){
     if(g.product !== 'camiseta') await productReady(g.product);
     const src = g.photo || await renderComposite(g.color, 'front', gLayers(g), 420);
@@ -705,7 +705,7 @@ async function init(){
 }
 
 /* ---------------- FOTOS REALES DE ESPALDA Y LADO ----------------
-   productos/camisetas/fotos.js define window.JEB_FOTOS = { color: { espalda, lado } }.
+   camisetas/fotos.js define window.JEB_FOTOS = { color: { espalda, lado } }.
    Cada foto se iguala en color a la foto de frente del catálogo (ganancia por canal
    medida en el pecho) y se normaliza al mismo lienzo que el frente. */
 function loadScriptOnce(src){
@@ -749,7 +749,7 @@ async function matchToFront(src, frontSrc, keepFolds = false){
   return a.cv.toDataURL('image/png');
 }
 async function loadRealPhotos(){
-  try{ if(!window.JEB_FOTOS) await loadScriptOnce('productos/camisetas/fotos.js'); }
+  try{ if(!window.JEB_FOTOS) await loadScriptOnce('camisetas/fotos.js'); }
   catch(err){ console.warn('Sin fotos reales de espalda/lado', err); return; }
   await Promise.all(COLORS.map(async c => {
     const f = window.JEB_FOTOS[c.id]; if(!f) return;
@@ -1940,11 +1940,11 @@ async function startViewer(){
     const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
     await _initP; await productReady(P);
     if(P === 'gorra'){
-      try{ await initBuzoGLBScene(THREE, RoomEnvironment, true); }                 // modelo 3D real (productos/gorras/gorra_web.glb)
+      try{ await initBuzoGLBScene(THREE, RoomEnvironment, true); }                 // modelo 3D real (gorras/gorra_web.glb)
       catch(err){ console.warn('Modelo GLB de la gorra no disponible, se usa el procedural', err); await initCapScene(THREE, RoomEnvironment); }
     }
     else if(P === 'buzo'){
-      try{ await initBuzoGLBScene(THREE, RoomEnvironment); }                       // modelo 3D real (productos/buzos/buzo_web.glb)
+      try{ await initBuzoGLBScene(THREE, RoomEnvironment); }                       // modelo 3D real (buzos/buzo_web.glb)
       catch(err){ console.warn('Modelo GLB del buzo no disponible, se usa el procedural', err); await initScene(THREE, RoomEnvironment, P); }
     }
     else await initScene(THREE, RoomEnvironment, P);
@@ -2609,7 +2609,7 @@ initViewer3D();
 /* ======================================================================
    7) MULTI-PRODUCTO: Camisetas, Buzos y Gorras
    - PRODUCTS define nombre, precio, tallas, colores, caras y área imprimible.
-   - Las fotos de buzos y gorras están en productos/buzos/fotos.js y productos/gorras/fotos.js
+   - Las fotos de buzos y gorras están en buzos/fotos.js y gorras/fotos.js
      (vistas recortadas de las hojas de las carpetas Buzos y gorras).
    - Precios y descripciones: edítalos aquí abajo.
    ====================================================================== */
@@ -2659,7 +2659,7 @@ function productReady(p){
   if(p === 'camiseta') return _initP;
   if(!_prodP[p]) _prodP[p] = (async () => {
     const key = p === 'buzo' ? 'JEB_BUZOS' : 'JEB_GORRAS';
-    if(!window[key]) await loadScriptOnce(p === 'buzo' ? 'productos/buzos/fotos.js' : 'productos/gorras/fotos.js');
+    if(!window[key]) await loadScriptOnce(p === 'buzo' ? 'buzos/fotos.js' : 'gorras/fotos.js');
     const D = window[key], P = PRODUCTS[p];
     const FR = p === 'buzo' && window.JEB_BUZOS_FRENTE;      // buzos: fotos de frente sin fondo (más limpias)
     const list = P.palette.map(([id, name, hex]) => ({ id, name, hex: hex || D[id].hex, img: (FR && FR[id]) || D[id].frente, views: D[id] }));
@@ -3327,7 +3327,7 @@ async function initCapScene(THREE, RoomEnvironment){
 }
 
 /* ======================================================================
-   10) BUZO 3D con MODELO REAL (productos/buzos/buzo_web.glb, generado con IA y aligerado)
+   10) BUZO 3D con MODELO REAL (buzos/buzo_web.glb, generado con IA y aligerado)
    - Un solo modelo blanco; cada color se tiñe con el tono exacto del catálogo.
    - El estampado se proyecta desde el frente/espalda (misma posición que en el personalizador).
    - Cordones: un mapa de profundidad del pecho detecta lo que sobresale (cordones) y ahí
@@ -3336,7 +3336,7 @@ async function initCapScene(THREE, RoomEnvironment){
 async function initBuzoGLBScene(THREE, RoomEnvironment, CAP = false){
   const myId = V3.sceneId, host = $('tee3d');
   const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
-  const gltf = await new GLTFLoader().loadAsync(CAP ? 'productos/gorras/gorra_web.glb' : 'productos/buzos/buzo_web.glb');
+  const gltf = await new GLTFLoader().loadAsync(CAP ? 'gorras/gorra_web.glb' : 'buzos/buzo_web.glb');
   if(V3.sceneId !== myId) return;
   let src = null; gltf.scene.traverse(o => { if(o.isMesh && !src) src = o; });
   if(!src) throw new Error('GLB sin malla');
