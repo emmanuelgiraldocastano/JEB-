@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- La página tiene su propio diseño oscuro: el navegador NO debe aplicar su "modo oscuro/claro" automático -->
+<meta name="color-scheme" content="only dark">
+<meta name="theme-color" content="#121212">
+<title>JEB — Camisetas a tu manera</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=2">
+<link rel="apple-touch-icon" href="favicon.svg?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<!-- Visor 3D: Three.js se descarga de forma diferida desde script.js (IntersectionObserver en #visor3d) -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" class="logo">JE<span>B</span></a>
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#catalogo">Catálogo</a></li>
+      <li><a href="#buzos">Buzos</a></li>
+      <li><a href="#gorras">Gorras</a></li>
+      <li><a href="#personalizar">Personalizar</a></li>
+      <li><a href="#visor3d">Vista 3D</a></li>
+      <li class="nav-mobile-only"><a href="#" data-open="openLogin">Iniciar sesión</a></li>
+      <li class="nav-mobile-only"><a href="#" data-open="openRegister">Registrarse</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="ghost-btn" id="openLogin">Iniciar sesión</button>
+      <button class="ghost-btn" id="openRegister">Registrarse</button>
+      <button class="ghost-btn logged-in" id="userPill" style="display:none;">Hola</button>
+      <button class="cart-btn" id="openCart">Carrito <span class="cart-count" id="cartCount">0</span></button>
+    </div>
+  </div>
+</nav>
+
+<div id="top" class="hero">
+  <div class="floaters" id="floaters"></div>
+  <h1>Tu camiseta, <em>tu diseño</em>, tu manera.</h1>
+  <p>Elige el color, agrega tu diseño y míralo en 3D antes de comprar.</p>
+  <div class="hero-ctas">
+    <a href="#catalogo" class="btn btn-primary">Ver catálogo</a>
+    <a href="#personalizar" class="btn btn-ghost">Personalizar ahora</a>
+  </div>
+</div>
+
+<!-- CATÁLOGO: una sección por producto. La tarjeta (fotos, colores, tallas, precio) la arma script.js -->
+<section id="catalogo" class="cat-section">
+  <div class="wrap">
+    <div class="cat-cover"><img src="productos/portadas/camisetas.webp" alt="Camisetas JEB en cinco colores" loading="lazy"><h2>Camisetas</h2></div>
+    <div class="product-card" data-card="camiseta"></div>
+  </div>
+</section>
+
+<section id="buzos" class="cat-section">
+  <div class="wrap">
+    <div class="cat-cover"><img src="productos/portadas/buzos.webp" alt="Buzos JEB con capucha en cinco colores" loading="lazy"><h2>Buzos</h2></div>
+    <div class="product-card" data-card="buzo"></div>
+  </div>
+</section>
+
+<section id="gorras" class="cat-section">
+  <div class="wrap">
+    <div class="cat-cover"><img src="productos/portadas/gorras.webp" alt="Gorras JEB en cinco colores" loading="lazy"><h2>Gorras</h2></div>
+    <div class="product-card" data-card="gorra"></div>
+  </div>
+</section>
+
+<section class="specs" id="detalles">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Detalles de la prenda</h2>
+      <p>Lo que necesitas saber antes de comprar.</p>
+    </div>
+    <div class="spec-grid">
+      <div class="spec-card"><div class="k">Ajuste</div><h3>Regular Fit</h3><p>Corte recto clásico y calce unisex. Si prefieres un look holgado, sube una talla.</p></div>
+      <div class="spec-card"><div class="k">Tela</div><h3>180 g/m²</h3><p>100% algodón peinado: suave, fresco y con cuerpo, ideal para recibir estampado.</p></div>
+      <div class="spec-card"><div class="k">Estampado</div><h3>Hasta A4</h3><p>Área imprimible de 21 × 30 cm en pecho o espalda. Verás la guía punteada en el personalizador.</p></div>
+      <div class="spec-card"><div class="k">Cuidado</div><h3>Lavado</h3>
+        <ul><li>Lavar del revés en agua fría (máx. 30 °C)</li><li>No usar blanqueador</li><li>No secar en secadora</li><li>Planchar del revés, a baja temperatura</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="customizer" id="personalizar">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Personaliza tu estampado</h2>
+      <p>Agrega texto o tu propia imagen, arrástralo a donde quieras y ajusta el tamaño. Lo que ves aquí es lo que se imprime.</p>
+    </div>
+    <div class="custom-grid">
+      <div class="stage-wrap">
+        <div class="view-tabs" id="viewTabs" role="tablist" aria-label="Vista de la camiseta">
+          <button type="button" class="active" data-side="front" role="tab" aria-selected="true">Frente <small id="cntFront"></small></button>
+          <button type="button" data-side="back" role="tab" aria-selected="false">Espalda <small id="cntBack"></small></button>
+        </div>
+        <div class="stage" id="stage">
+          <img class="base" id="stageImg" src="" alt="Vista previa camiseta">
+          <canvas class="ink-canvas" id="inkCanvas" aria-hidden="true"></canvas>
+          <div class="print-area" id="printArea"><span id="printAreaLabel">Área de impresión A4 · 21×30 cm</span></div>
+          <button type="button" class="stage-zoom-btn" id="stageZoom" aria-pressed="false" aria-label="Ampliar lienzo a pantalla completa" title="Pantalla completa">⤢</button>
+        </div>
+        <div class="stage-tools" id="stageTools">
+          <p class="stage-tools-hint" id="stageToolsHint">Toca un elemento para ajustar su tamaño y rotación.</p>
+          <div class="stage-tools-sliders" id="stageToolsSliders" hidden>
+            <label>Tamaño <input type="range" id="zScale" min="0.5" max="2.2" step="0.05" value="1"></label>
+            <label>Rotación <input type="range" id="zRot" min="-180" max="180" step="1" value="0"></label>
+          </div>
+          <button type="button" class="btn btn-primary" id="stageZoomClose">Listo</button>
+        </div>
+        <p class="stage-tip">Arrastra para mover · Esquinas: ✕ borrar, ↻ rotar, ⤡ tamaño · Rojo = fuera del área</p>
+        <button type="button" class="ghost-btn stage-3d-link" id="goView3d">Ver mi diseño en 3D · 360° →</button>
+        <button type="button" class="btn btn-primary tryon-open" id="openTryon">✨ Pruébatela con IA</button>
+      </div>
+
+      <div class="panel">
+        <h3>Estampado</h3>
+        <p class="sub">Elige el producto, el color base y agrega tus elementos.</p>
+
+        <div class="field">
+          <label>Producto</label>
+          <div class="prod-tabs" id="prodTabs" role="tablist" aria-label="Producto">
+            <button type="button" data-p="camiseta" role="tab">Camiseta</button>
+            <button type="button" data-p="buzo" role="tab">Buzo</button>
+            <button type="button" data-p="gorra" role="tab">Gorra</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label id="colorLabel">Color de la camiseta</label>
+          <div class="swatches" id="customSwatches"></div>
+        </div>
+
+        <div class="field">
+          <label>Talla <button type="button" class="link-btn size-guide-link" id="customGuide">Guía de tallas</button></label>
+          <div class="sizes" id="customSizes" role="group" aria-label="Talla"></div>
+        </div>
+
+        <div class="add-row">
+          <button class="icon-btn" id="addText">+ Agregar texto</button>
+          <label class="icon-btn" for="fileUpload" style="text-align:center; display:flex; align-items:center; justify-content:center; margin:0;">+ Subir imagen</label>
+          <input type="file" id="fileUpload" accept="image/*" style="display:none;">
+        </div>
+
+        <div id="layerListWrap">
+          <p class="empty-note" id="noLayersNote">Aún no has agregado ningún elemento.</p>
+          <div class="layer-list" id="layerList"></div>
+        </div>
+
+        <div id="layerControls" style="display:none;">
+          <div class="field" id="textFieldWrap">
+            <label>Texto</label>
+            <input type="text" id="textInput" maxlength="24" placeholder="Escribe algo...">
+          </div>
+          <div class="row-2" id="fontColorRow">
+            <div class="field">
+              <label>Tipografía</label>
+              <select id="fontSelect">
+                <option value="'Fredoka', sans-serif">Redondeada</option>
+                <option value="'Space Grotesk', sans-serif">Moderna</option>
+                <option value="'Permanent Marker', cursive">Grafiti</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Color</label>
+              <input type="color" id="colorInput" value="#FF5722">
+            </div>
+          </div>
+          <div class="field">
+            <label>Tamaño</label>
+            <input type="range" id="scaleInput" min="0.5" max="2.2" step="0.05" value="1">
+          </div>
+          <div class="field">
+            <label>Rotación</label>
+            <input type="range" id="rotInput" min="-180" max="180" step="1" value="0">
+          </div>
+          <button type="button" class="icon-btn" id="hideControls">✓ Listo — ocultar controles</button>
+        </div>
+
+        <div class="panel-actions">
+          <button class="icon-btn" id="clearLayers">Dejar sin estampado</button>
+          <button class="btn btn-primary" id="addCustomToCart" style="flex:1;">Agregar al carrito — <span id="customPrice">$96.000</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="visor3d">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Míralo en 3D</h2>
+    </div>
+    <div class="viewer3d-card">
+      <div id="tee3d" role="img" aria-label="Camiseta JEB en 3D con tu diseño"></div>
+      <div class="viewer3d-bar">
+        <div class="viewer3d-btns">
+          <button type="button" class="ghost-btn" id="view3dFront">Frente</button>
+          <button type="button" class="ghost-btn" id="view3dBack">Espalda</button>
+          <button type="button" class="ghost-btn" id="view3dSpin" aria-pressed="true">Girar solo</button>          <button type="button" class="ghost-btn" id="view3dRefresh">Actualizar diseño</button>
+        </div>
+        <p id="view3dStatus" role="status" aria-live="polite">Cargando visor 3D…</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="inspiracion">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Inspiración</h2>
+      <p>Ideas de diseños hechos con el personalizador. Toca uno para cargarlo y hacerlo tuyo.</p>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="#top" class="logo" style="font-size:22px;">JE<span>B</span></a>
+    <p>Camisetas base + tu estampado. Medellín, Colombia.</p>
+  </div>
+</footer>
+
+<div class="backdrop" id="overlayBackdrop"></div>
+
+<!-- CARRITO -->
+<div class="modal modal-light modal-wide" id="cartModal">
+  <div class="modal-head-light">
+    <h3>Tu Carrito — JE<span>B</span></h3>
+    <button class="modal-close-light" id="closeCart">&times;</button>
+  </div>
+  <div class="cart-rows" id="drawerItems">
+    <p class="drawer-empty">Tu carrito está vacío por ahora.</p>
+  </div>
+  <div class="cart-foot">
+    <div class="cart-total-row"><span>Total:</span><b id="drawerTotal">$0</b></div>
+    <button class="btn btn-primary" style="width:100%;" id="checkoutBtn">Finalizar Compra →</button>
+  </div>
+</div>
+
+<!-- PROBADOR VIRTUAL CON IA -->
+<div class="modal modal-light modal-wide" id="tryonModal">
+  <div class="modal-head-light">
+    <h3>Probador virtual con IA — JE<span>B</span></h3>
+    <button class="modal-close-light" id="closeTryon" aria-label="Cerrar">&times;</button>
+  </div>
+  <div class="modal-body-light tryon-body">
+    
+    <div class="tryon-grid">
+      <figure class="tryon-slot">
+        <label class="tryon-drop" for="tryonPhoto">
+          <img id="tryonPersonImg" alt="" hidden>
+          <span id="tryonPersonHint">📷 Toca para tomar o subir tu foto</span>
+        </label>
+        <input type="file" id="tryonPhoto" accept="image/*" capture="user" hidden>
+        <figcaption>Tu foto</figcaption>
+      </figure>
+      <figure class="tryon-slot">
+        <div class="tryon-drop tryon-static"><img id="tryonGarmentImg" alt="Prenda con tu diseño"></div>
+        <figcaption id="tryonGarmentCap">Tu diseño</figcaption>
+      </figure>
+      <figure class="tryon-slot tryon-result">
+        <div class="tryon-drop tryon-static"><img id="tryonResultImg" alt="Resultado" hidden><span id="tryonResultHint">Pega aquí (Ctrl + V) la imagen de Gemini</span></div>
+        <figcaption>Resultado</figcaption>
+      </figure>
+    </div>
+    <p class="tryon-status" id="tryonStatus" role="status" aria-live="polite"></p>
+    <ol class="tryon-flow">
+      <li><span class="tryon-num">1</span><div><p><b>Sube tu foto</b> en el primer recuadro. Tu prenda con el diseño ya está lista al lado.</p></div></li>
+      <li><span class="tryon-num">2</span><div><p><b>Crea la imagen con Gemini.</b> Se descarga una sola imagen con tu foto y la prenda, se copian las instrucciones y se abre Gemini. Allí: <b>+</b> → sube esa imagen → <b>Ctrl + V</b> → enviar.</p>
+        <button type="button" class="btn btn-primary tryon-big" id="tryonPrep">✨ Crear con Gemini</button></div></li>
+      <li><span class="tryon-num">3</span><div><p><b>Trae el resultado:</b> en Gemini haz clic derecho sobre la imagen → <b>Copiar imagen</b>, vuelve aquí y presiona <b>Ctrl + V</b>. También puedes arrastrarla al recuadro "Resultado" o subirla.</p>
+        <span class="tryon-row"><label class="btn btn-ghost tryon-big" for="tryonResultFile">⬆ Subir resultado</label>
+        <a class="btn btn-ghost tryon-big" id="tryonDownload" download="jeb-probador.png" hidden>⬇ Descargar imagen</a></span></div></li>
+    </ol>
+    <input type="file" id="tryonResultFile" accept="image/*" hidden>
+    <!-- motor automático por API (opcional, oculto): requiere clave con facturación -->
+    <div hidden>
+      <button type="button" id="tryonGo"></button>
+      <input type="password" id="tryonToken" autocomplete="off"><button type="button" id="tryonTokenSave"></button>
+      <details class="tryon-config"></details>
+    </div>
+    
+  </div>
+</div>
+
+<!-- INICIAR SESIÓN -->
+<div class="modal modal-light" id="loginModal">
+  <div class="modal-head-light modal-head-center">
+    <h3>JEB — Iniciar Sesión</h3>
+    <button class="modal-close-light" id="closeLogin">&times;</button>
+  </div>
+  <form class="modal-body-light" id="loginForm" novalidate>
+    <div class="field-light">
+      <label for="loginEmail">Correo electrónico</label>
+      <input type="email" id="loginEmail" placeholder="tucorreo@ejemplo.com">
+    </div>
+    <div class="field-light">
+      <label for="loginPass">Contraseña</label>
+      <input type="password" id="loginPass" placeholder="Mínimo 6 caracteres">
+    </div>
+    <p class="form-error" id="loginError"></p>
+    <button type="submit" class="btn btn-primary" style="width:100%;">Iniciar Sesión</button>
+    <div class="divider-row"><span></span>O continuar con:<span></span></div>
+    <div class="social-row">
+      <button type="button" class="social-btn" id="googleBtn" aria-label="Continuar con Google">G</button>
+      <button type="button" class="social-btn" id="facebookBtn" aria-label="Continuar con Facebook">f</button>
+      <button type="button" class="social-btn" id="appleBtn" aria-label="Continuar con Apple"></button>
+    </div>
+    <a href="#" class="auth-link" id="forgotPass">¿Olvidaste tu contraseña?</a>
+    <p class="auth-switch">¿No tienes cuenta? <a href="#" id="toRegister">Regístrate</a></p>
+  </form>
+</div>
+
+<!-- REGISTRO -->
+<div class="modal modal-light" id="regModal">
+  <div class="modal-head-light modal-head-center">
+    <h3 id="regTitle">JEB — Crear Cuenta</h3>
+    <button class="modal-close-light" id="closeRegister">&times;</button>
+  </div>
+  <form class="modal-body-light" id="registerForm" novalidate>
+    <div class="field-light">
+      <label for="regName">Nombre completo</label>
+      <input type="text" id="regName" placeholder="Tu nombre">
+    </div>
+    <div class="row-2">
+      <div class="field-light">
+        <label for="regAge">Edad</label>
+        <input type="number" id="regAge" min="13" max="99" placeholder="18">
+      </div>
+      <div class="field-light">
+        <label for="regCity">Ciudad</label>
+        <input type="text" id="regCity" placeholder="Medellín">
+      </div>
+    </div>
+    <div class="field-light">
+      <label for="regEmail">Correo electrónico</label>
+      <input type="email" id="regEmail" placeholder="tucorreo@ejemplo.com">
+    </div>
+    <div class="row-2">
+      <div class="field-light">
+        <label for="regPass">Contraseña</label>
+        <input type="password" id="regPass" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="field-light">
+        <label for="regPass2">Confirmar contraseña</label>
+        <input type="password" id="regPass2" placeholder="Repite la contraseña">
+      </div>
+    </div>
+    <p class="form-error" id="regError"></p>
+    <button type="submit" class="btn btn-primary" style="width:100%;">Crear Cuenta</button>
+    <p class="auth-switch">¿Ya tienes cuenta? <a href="#" id="toLogin">Inicia sesión</a></p>
+  </form>
+</div>
+
+<!-- GUÍA DE TALLAS -->
+<div class="modal modal-light" id="sizeModal">
+  <div class="modal-head-light">
+    <h3>Guía de tallas</h3>
+    <button class="modal-close-light" id="closeSize" aria-label="Cerrar">&times;</button>
+  </div>
+  <div class="modal-body-light">
+    <table class="size-table">
+      <thead><tr><th>Talla</th><th>Ancho (cm)</th><th>Largo (cm)</th></tr></thead>
+      <tbody id="sizeBody">
+        <tr data-size="S"><td>S</td><td>49</td><td>69</td></tr>
+        <tr data-size="M"><td>M</td><td>52</td><td>72</td></tr>
+        <tr data-size="L"><td>L</td><td>55</td><td>74</td></tr>
+        <tr data-size="XL"><td>XL</td><td>58</td><td>76</td></tr>
+        <tr data-size="XXL"><td>XXL</td><td>61</td><td>78</td></tr>
+      </tbody>
+    </table>
+    <p class="size-note">Ancho: de costura a costura, a la altura del pecho. Largo: del hombro al borde inferior. Toca una fila para elegir esa talla. Tip: mide una camiseta que ya te quede bien y compárala.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
